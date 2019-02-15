@@ -12,7 +12,6 @@ int main(int argc, char **argv) {
 	cin >> s_in >> s_out;
 	LineSegmentation module = LineSegmentation(s_in, s_out);
 	module.proceed();
-
 }
 
 

@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/linesegmentation.cpp \
 ../src/main.cpp 
 
 OBJS += \
+./src/linesegmentation.o \
 ./src/main.o 
 
 CPP_DEPS += \
+./src/linesegmentation.d \
 ./src/main.d 
 
 

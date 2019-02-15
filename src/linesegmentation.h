@@ -15,6 +15,8 @@
 #include <math.h>
 #include <iostream>
 #define uchar unsigned char
+#define index first
+#define hgt second
 
 using namespace cimg_library;
 using namespace std;
@@ -23,15 +25,19 @@ class Chunk;
 
 
 class LineSegmentation{
-
-	LineSegmentation(string, string);
+	friend class Chunk;
 
 public:
+	LineSegmentation(string, string);
+
 	void proceed();
 
 	void save_lines();
 
 	bool read_image();
+
+	void process_chunks();
+
 
 private:
 	//paths for input ans output images
@@ -43,7 +49,39 @@ private:
 
 	//chunks
 	vector<Chunk*> chunks;
+
+	//number of chunks
+	const int num_of_chunks = 20;
 };
 
+class Chunk{
+	friend class LineSegmentation;
+private:
+	//parameters of the chunk
+	int _width;
+	int _height;
+	int start_of_the_chunk;
+
+	//index of the chunk
+	int ind;
+
+	//The projection profile of the chunk
+	vector<int> hist;
+
+public:
+	Chunk(int a, int b, int in, int st){
+		_height = a;
+		_width = b;
+		ind = in;
+		start_of_the_chunk = st;
+		fill_n(hist.begin(), 23, 0);
+	};
+
+	void build_hist(LineSegmentation*);
+
+	//peaks
+	vector<pair<int, int> > peaks;
+
+};
 
 #endif
