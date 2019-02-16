@@ -74,7 +74,8 @@ public:
 		_width = b;
 		ind = in;
 		start_of_the_chunk = st;
-		fill_n(hist.begin(), 23, 0);
+		//fill_n(hist.begin(), 23, 0);
+		for (int i = 0; i < 23; i ++) hist.push_back(0);
 	};
 
 	void build_hist(LineSegmentation*);
