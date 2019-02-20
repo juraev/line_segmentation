@@ -14,6 +14,7 @@
 #include <map>
 #include <math.h>
 #include <iostream>
+#include <set>
 #define uchar unsigned char
 #define index first
 #define hgt second
@@ -32,11 +33,11 @@ public:
 
 	void proceed();
 
-	void save_lines();
-
 	bool read_image();
 
 	void process_chunks();
+
+	void draw_initial_lines();
 
 
 private:
@@ -88,9 +89,9 @@ public:
 
 	void prepare_peaks();
 
-	//peaks
+	//peaks and valleys
 	vector<pair<int, int> > peaks;
-
+	vector<int> valleys;
 };
 
 #endif

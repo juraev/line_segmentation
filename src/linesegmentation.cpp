@@ -17,7 +17,11 @@ void LineSegmentation :: proceed(){
 		//ToDo @juraev think what to do
 	}
 
+	//here, we build up chunks and their projection profiles
+	//then we smooth the profile and get peaks as well as valleys
 	process_chunks();
+
+	draw_initial_lines();
 
 }
 
@@ -43,10 +47,11 @@ void LineSegmentation :: process_chunks(){
 		ch.build_hist(this);
 		chunks.push_back(&ch);
 	}
-
 }
 
+void LineSegmentation :: draw_initial_lines(){
 
+}
 //--------------------------------------------------------
 //Chunkssss
 
@@ -95,29 +100,41 @@ void Chunk :: build_hist(LineSegmentation * module){
 }
 
 void Chunk::prepare_peaks(){
-	//Search for peaks
-	for (int i = 1; i < _height; i ++){
+	//Search for peaks and valleys
+	for (int i = 0; i < _height; i ++){
+		if(i != 0)
+			valleys.push_back(i);
 		while(sm_hist[i] == 0 && i < _height){
 			i ++;
 		}
-		int in = -1, mxval = -1;
+		valleys.push_back(i - 1);
+		int in = -1, mxval = -1;//max value on nonzero region
+		int ii = -1, mnval = 1e9;//min value on this region
 
 		while(sm_hist[i] != 0 && i < _height){
+
 			if(sm_hist[i] >= mxval && i - in <= avg_height / 2){
 
 				in = i, mxval = sm_hist[i];
 				if(!peaks.empty())peaks.back()={in, mxval};
 				else peaks.push_back({in, mxval}), num_of_lines++;
+				mnval = 1e9; ii = -1;
 
 			} else if(sm_hist[i] >= mxval){
+
+				if(ii >= 0)				//minimal value between two peaks found
+				valleys.push_back(ii);
+
+				mnval = 1e9; ii = -1;	//reset values
 
 				in = i, mxval = sm_hist[i];
 				peaks.push_back({in, mxval});
 				num_of_lines++;
 			}
+			if(sm_hist[i] < mnval) {
+				mnval = sm_hist[i], ii = i;
+			}
 			i ++;
 		}
 	}
-
-
 }
