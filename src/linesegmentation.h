@@ -61,12 +61,15 @@ private:
 	int _width;
 	int _height;
 	int start_of_the_chunk;
+	int avg_height;
+	int num_of_lines;
 
 	//index of the chunk
 	int ind;
 
 	//The projection profile of the chunk
 	vector<int> hist;
+	vector<int> sm_hist;
 
 public:
 	Chunk(int a, int b, int in, int st){
@@ -75,10 +78,15 @@ public:
 		ind = in;
 		start_of_the_chunk = st;
 		//fill_n(hist.begin(), 23, 0);
-		for (int i = 0; i < 23; i ++) hist.push_back(0);
+		hist = vector<int>(_height + 2, 0);
+		sm_hist = vector<int>();
+		avg_height = 0;
+		num_of_lines = 0;
 	};
 
 	void build_hist(LineSegmentation*);
+
+	void prepare_peaks();
 
 	//peaks
 	vector<pair<int, int> > peaks;
