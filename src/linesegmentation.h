@@ -39,6 +39,8 @@ public:
 
 	void draw_initial_lines();
 
+	int dist(int, int, int, int);
+
 
 private:
 	//paths for input ans output images

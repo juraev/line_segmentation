@@ -50,8 +50,47 @@ void LineSegmentation :: process_chunks(){
 }
 
 void LineSegmentation :: draw_initial_lines(){
+	clog << "drawing started" << endl;
+	for (int i = 1; i < num_of_chunks; i ++){
 
+		int n = chunks[i]->valleys.size();
+		int n_1 = chunks[i-1]->valleys.size();
+		vector<int> cnct(chunks[i-1]->valleys.size(), -1);
+		int j = 0, mn = 1e9;
+
+		//bind valleys on phi(i) with valleys on phi(i-1)
+		for (int x = 0; x < n; x ++){
+			while(j < n_1 && mn > dist(i, x, i-1, j)) mn = dist(i, x, i-1, j), j ++;
+			if(!cnct.empty()){
+				if(cnct[j] != -1 && dist(i, cnct[j], i-1, j) > dist(i, x, i-1, j)){
+					cnct[j] = x;
+				} else if(cnct[j] == -1) cnct[j] = x;
+				else if(dist(i, x, i - 1, j) == dist(i, x, i - 1, j + 1)){
+					cnct[j+1]=x;
+				}
+			}
+		}
+		clog << "connecting is finished" << endl;
+
+		const unsigned char color[3] = {70, 70, 70};
+		for (j = 0; j < n_1; j ++){
+			if(cnct[j] != -1)
+				input_img.draw_line(chunks[i-1]->start_of_the_chunk, chunks[i-1]->valleys[j],
+						chunks[i]->start_of_the_chunk, chunks[i]->valleys[cnct[j]], color, 1);
+			else
+				input_img.draw_line(chunks[i-1]->start_of_the_chunk, chunks[i-1]->valleys[j],
+						chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j], color, 1);
+			input_img.draw_line(chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j],
+					chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j], color, 1);
+		}
+	}
+	input_img.save_jpeg(output_path.c_str());
 }
+
+int LineSegmentation :: dist(int from, int i, int to, int j){
+	return abs(chunks[from]->valleys[i] - chunks[to]->valleys[j]);
+}
+
 //--------------------------------------------------------
 //Chunkssss
 
@@ -99,7 +138,7 @@ void Chunk :: build_hist(LineSegmentation * module){
 
 }
 
-void Chunk::prepare_peaks(){
+void Chunk :: prepare_peaks(){
 	//Search for peaks and valleys
 	for (int i = 0; i < _height; i ++){
 		if(i != 0)
@@ -123,7 +162,7 @@ void Chunk::prepare_peaks(){
 			} else if(sm_hist[i] >= mxval){
 
 				if(ii >= 0)				//minimal value between two peaks found
-				valleys.push_back(ii);
+					valleys.push_back(ii);
 
 				mnval = 1e9; ii = -1;	//reset values
 
