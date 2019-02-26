@@ -53,6 +53,7 @@
 */
 
 // Set version number of the library.
+#define cimg_display 0
 #ifndef cimg_version
 #define cimg_version 245
 #define cimg_display 0

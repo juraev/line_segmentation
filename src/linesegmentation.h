@@ -5,13 +5,14 @@
  *      Author: jack
  */
 
-#ifndef LINESEGMENTATION
-#define LINESEGMENTATION
+#ifndef LINESEGMENTATION_H_
+#define LINESEGMENTATION_H_
 #include "CImg.h"
 #include <vector>
 #include <map>
 #include <math.h>
 #include <iostream>
+#include <set>
 #define uchar unsigned char
 #define index first
 #define hgt second
@@ -30,11 +31,13 @@ public:
 
 	void proceed();
 
-	void save_lines();
-
 	bool read_image();
 
 	void process_chunks();
+
+	void draw_initial_lines();
+
+	int dist(int, int, int, int);
 
 
 private:
@@ -46,7 +49,7 @@ private:
 	CImg<uchar> input_img;
 
 	//chunks
-	vector<Chunk> chunks;
+	vector<Chunk*> chunks;
 
 	//number of chunks
 	const int num_of_chunks = 20;
@@ -59,12 +62,15 @@ private:
 	int _width;
 	int _height;
 	int start_of_the_chunk;
+	int avg_height;
+	int num_of_lines;
 
 	//index of the chunk
 	int ind;
 
 	//The projection profile of the chunk
 	vector<int> hist;
+	vector<int> sm_hist;
 
 public:
 	Chunk(int a, int b, int in, int st){
@@ -72,15 +78,20 @@ public:
 		_width = b;
 		ind = in;
 		start_of_the_chunk = st;
-//		for (int i = 0; i < 23; i ++) hist.push_back(0);
+		//fill_n(hist.begin(), 23, 0);
 		hist = vector<int>(_height + 2, 0);
+		sm_hist = vector<int>();
+		avg_height = 0;
+		num_of_lines = 0;
 	};
 
 	void build_hist(LineSegmentation*);
 
-	//peaks
-	vector<pair<int, int> > peaks;
+	void prepare_peaks();
 
+	//peaks and valleys
+	vector<pair<int, int> > peaks;
+	vector<int> valleys;
 };
 
 #endif
