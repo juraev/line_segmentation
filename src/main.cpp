@@ -14,4 +14,8 @@ int main(int argc, char **argv) {
 	module.proceed();
 }
 
-
+/*
+/home/jack/eclipse-workspace/output/b01-000/otsu.jpg
+/home/jack/eclipse-workspace/output/b01-000/img.jpg
+ *
+ */

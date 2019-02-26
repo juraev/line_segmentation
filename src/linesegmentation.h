@@ -5,8 +5,6 @@
  *      Author: jack
  */
 
-
-
 #ifndef LINESEGMENTATION
 #define LINESEGMENTATION
 #include "CImg.h"
@@ -48,7 +46,7 @@ private:
 	CImg<uchar> input_img;
 
 	//chunks
-	vector<Chunk*> chunks;
+	vector<Chunk> chunks;
 
 	//number of chunks
 	const int num_of_chunks = 20;
@@ -74,8 +72,8 @@ public:
 		_width = b;
 		ind = in;
 		start_of_the_chunk = st;
-		//fill_n(hist.begin(), 23, 0);
-		for (int i = 0; i < 23; i ++) hist.push_back(0);
+//		for (int i = 0; i < 23; i ++) hist.push_back(0);
+		hist = vector<int>(_height + 2, 0);
 	};
 
 	void build_hist(LineSegmentation*);
