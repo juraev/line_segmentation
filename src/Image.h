@@ -2,7 +2,7 @@
  * Image.h
  *
  *  Created on: Jan 4, 2019
- *      Author: jack
+ *      Author: juraev
  */
 
 #ifndef IMAGE_H_
