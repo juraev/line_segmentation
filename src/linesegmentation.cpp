@@ -2,7 +2,7 @@
  * linesegmentation.cpp
  *
  *  Created on: Feb 13, 2019
- *      Author: jack
+ *      Author: juraev
  */
 
 #include "linesegmentation.h"
