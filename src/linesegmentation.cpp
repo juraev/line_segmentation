@@ -43,133 +43,146 @@ void LineSegmentation :: process_chunks(){
 	int wi = input_img._width / num_of_chunks;
 	int hi = input_img._height;
 	for (int i = 0; i < num_of_chunks; i ++){
-		Chunk ch = Chunk(hi, wi, i, st);
+		Chunk ch(hi, wi, i, st);
 		st += wi;
 		ch.build_hist(this);
-		chunks.push_back(&ch);
+		chunks.push_back(ch);
 	}
 }
 
 void LineSegmentation :: draw_initial_lines(){
-	clog << "drawing started" << endl;
+	//	clog << "drawing started" << endl;
 	for (int i = 1; i < num_of_chunks; i ++){
 
-		int n = chunks[i]->valleys.size();
-		int n_1 = chunks[i-1]->valleys.size();
-		vector<int> cnct(chunks[i-1]->valleys.size(), -1);
+		int n = chunks[i].num_of_valleys;
+		int n_1 = chunks[i-1].num_of_valleys;
+		if(n_1 == 0 || n == 0) continue;
+		vector<int> cnct;
+		for(int j = 0; j < n_1; j ++) cnct.push_back(-1);
+
 		int j = 0, mn = 1e9;
 
 		//bind valleys on phi(i) with valleys on phi(i-1)
-		for (int x = 0; x < n; x ++){
-			while(j < n_1 && mn > dist(i, x, i-1, j)) mn = dist(i, x, i-1, j), j ++;
-			if(!cnct.empty()){
-				if(cnct[j] != -1 && dist(i, cnct[j], i-1, j) > dist(i, x, i-1, j)){
-					cnct[j] = x;
-				} else if(cnct[j] == -1) cnct[j] = x;
-				else if(dist(i, x, i - 1, j) == dist(i, x, i - 1, j + 1)){
-					cnct[j+1]=x;
-				}
+		for (int x = 0; x < n && j < n_1; x ++){
+			while(j < n_1 && mn > dist(i, x, i-1, j)) {
+				mn = dist(i, x, i-1, j), j ++;
+			}
+			if(j >= n_1) break;
+			if(cnct[j] != -1 && dist(i, cnct[j], i-1, j) > dist(i, x, i-1, j)){
+				cnct[j] = x;
+			} else if(cnct[j] == -1) {
+				cnct[j] = x;
+			} else if(dist(i, x, i - 1, j) == dist(i, x, i - 1, j + 1)){
+				cnct[j+1]=x;
 			}
 		}
-		clog << "connecting is finished" << endl;
 
-		const unsigned char color[3] = {70, 70, 70};
-		for (j = 0; j < n_1; j ++){
-			if(cnct[j] != -1)
-				input_img.draw_line(chunks[i-1]->start_of_the_chunk, chunks[i-1]->valleys[j],
-						chunks[i]->start_of_the_chunk, chunks[i]->valleys[cnct[j]], color, 1);
-			else
-				input_img.draw_line(chunks[i-1]->start_of_the_chunk, chunks[i-1]->valleys[j],
-						chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j], color, 1);
-			input_img.draw_line(chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j],
-					chunks[i]->start_of_the_chunk, chunks[i-1]->valleys[j], color, 1);
+		const uchar col[] = {0, 0, 0};
+		for (int z = 0; z < n_1; z ++){
+			input_img.draw_line(chunks[i-1].start_of_the_chunk, chunks[i-1].valleys[z],
+					chunks[i].start_of_the_chunk, chunks[i-1].valleys[z], col, 1);
+			if(cnct[z] != -1){
+				input_img.draw_line(chunks[i].start_of_the_chunk, chunks[i-1].valleys[z],
+						chunks[i].start_of_the_chunk, chunks[i].valleys[cnct[z]], col, 1);
+			} else {
+				input_img.draw_line(chunks[i-1].start_of_the_chunk, chunks[i-1].valleys[z],
+						chunks[i].start_of_the_chunk, chunks[i-1].valleys[z], col, 1);
+			}
 		}
 	}
-	input_img.save_jpeg(output_path.c_str());
+	input_img.save_jpeg((output_path + "lines.jpg").c_str());
 }
 
 int LineSegmentation :: dist(int from, int i, int to, int j){
-	return abs(chunks[from]->valleys[i] - chunks[to]->valleys[j]);
+	return abs(chunks[from].valleys[i] - chunks[to].valleys[j]);
 }
 
 //--------------------------------------------------------
 //Chunkssss
 
 void Chunk :: build_hist(LineSegmentation * module){
+	//to test
+	//	ofstream ff("/home/jack/Pictures/log.txt", std::ios::app);
+
+	CImg<int> img = module->input_img.get_crop(start_of_the_chunk, 0,
+			start_of_the_chunk + _width, _height);
+
 	// running from each pixel of the chunk
-	//	ofstream ff("/home/khurshid/Pictures/log.txt", std::ios::app);
-
-
-	cimg_for_inXY(module->input_img, start_of_the_chunk, 0,
-			start_of_the_chunk + _width, _height, x, y){
-		if((int)module->input_img(x, y, 0) < 100) hist[y] ++;
+	cimg_forXY(img, x, y){
+		if(img.atXY(x, y, 0) < 100){
+			hist[y] ++;
+		}
 	}
 
-
-	string s = (string)(module->output_path + to_string(ind) + ".jpg");
-	if(ind == 10)
-		module->input_img.crop(start_of_the_chunk, 0, 0,
-				start_of_the_chunk + _width, _height, 0).save_jpeg(s.c_str());
-
+	//		string s = (string)(module.output_path + to_string(ind) + ".jpg");
+	//		img.save_jpeg(s.c_str());
 
 	//smoothing the histogram with "Cumulative moving average" method
-	sm_hist.push_back((hist[0]+hist[1]+hist[3]+1)/3);
-	sm_hist.push_back((hist[0]+hist[1]+hist[3] + hist[4] + 2) / 4);
+	sm_hist[0] = ((hist[0]+hist[1]+hist[3]+1)/3);
+	sm_hist[1] = ((hist[0]+hist[1]+hist[3] + hist[4] + 2) / 4);
+
 
 	for (int i = 2; i <_height; i ++){
-		sm_hist.push_back((hist[i-2]+hist[i-1]+hist[i]+hist[i+1]+hist[i+2] + 2)/5);
+		sm_hist[i] = ((hist[i-2]+hist[i-1]+hist[i]+hist[i+1]+hist[i+2])/5);
+		//		if(ind == 10) ff << sm_hist[i] << endl;
 	}
 
-	for(auto x : sm_hist){
-		int tmp_he = 0;
-		if(x){
+	int nn = 0;
+	int tmp_he = 0;
+	for(int x : sm_hist){
+		if(x > 0){
 			tmp_he ++;
 		} else {
-			if(tmp_he){
+			if(tmp_he > 0){
 				avg_height += tmp_he;
-				num_of_lines ++;
+				nn ++;
 				tmp_he = 0;
 			}
 		}
 	}
 
-	if(num_of_lines) avg_height /= num_of_lines;
+	if(nn) avg_height = avg_height / nn;
 	avg_height = max(30, int(avg_height + avg_height / 2.0));
 	prepare_peaks();
-
 }
 
 void Chunk :: prepare_peaks(){
 	//Search for peaks and valleys
+	int start = 0;
 	for (int i = 0; i < _height; i ++){
-		if(i != 0)
-			valleys.push_back(i);
+		start = i;
+
 		while(sm_hist[i] == 0 && i < _height){
 			i ++;
 		}
-		valleys.push_back(i - 1);
+
+		if(i < _height){
+			valleys.push_back((start + i) / 2);
+			num_of_valleys ++;
+		}
+
 		int in = -1, mxval = -1;//max value on nonzero region
 		int ii = -1, mnval = 1e9;//min value on this region
 
 		while(sm_hist[i] != 0 && i < _height){
 
 			if(sm_hist[i] >= mxval && i - in <= avg_height / 2){
-
 				in = i, mxval = sm_hist[i];
 				if(!peaks.empty())peaks.back()={in, mxval};
-				else peaks.push_back({in, mxval}), num_of_lines++;
+				else peaks.push_back({in, mxval}), num_of_peaks++;
 				mnval = 1e9; ii = -1;
 
 			} else if(sm_hist[i] >= mxval){
 
-				if(ii >= 0)				//minimal value between two peaks found
+				if(ii >= 0){				//minimal value between two peaks is found
 					valleys.push_back(ii);
-
+					num_of_valleys ++;
+				}
 				mnval = 1e9; ii = -1;	//reset values
 
 				in = i, mxval = sm_hist[i];
 				peaks.push_back({in, mxval});
-				num_of_lines++;
+				num_of_peaks++;
 			}
 			if(sm_hist[i] < mnval) {
 				mnval = sm_hist[i], ii = i;
@@ -178,3 +191,18 @@ void Chunk :: prepare_peaks(){
 		}
 	}
 }
+
+Chunk::Chunk(int a, int b, int in, int st){
+	_height = a;
+	_width = b;
+	ind = in;
+	start_of_the_chunk = st;
+	hist = vector<int>(_height + 2, 0);
+	sm_hist = vector<int>(_height, 0);
+	avg_height = 0;
+	num_of_lines = 0;
+	peaks = vector<pair<int, int> >();
+	valleys = vector<int>();
+	num_of_valleys = 0;
+	num_of_peaks = 0;
+};

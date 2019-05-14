@@ -40,6 +40,8 @@ public:
 	int dist(int, int, int, int);
 
 
+
+
 private:
 	//paths for input ans output images
 	string input_path;
@@ -49,7 +51,7 @@ private:
 	CImg<uchar> input_img;
 
 	//chunks
-	vector<Chunk*> chunks;
+	vector<Chunk> chunks;
 
 	//number of chunks
 	const int num_of_chunks = 20;
@@ -64,6 +66,8 @@ private:
 	int start_of_the_chunk;
 	int avg_height;
 	int num_of_lines;
+	int num_of_valleys;
+	int num_of_peaks;
 
 	//index of the chunk
 	int ind;
@@ -73,17 +77,7 @@ private:
 	vector<int> sm_hist;
 
 public:
-	Chunk(int a, int b, int in, int st){
-		_height = a;
-		_width = b;
-		ind = in;
-		start_of_the_chunk = st;
-		//fill_n(hist.begin(), 23, 0);
-		hist = vector<int>(_height + 2, 0);
-		sm_hist = vector<int>();
-		avg_height = 0;
-		num_of_lines = 0;
-	};
+	Chunk(int, int, int, int);
 
 	void build_hist(LineSegmentation*);
 
