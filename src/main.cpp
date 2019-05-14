@@ -19,7 +19,6 @@ int main(int argc, char **argv) {
 }
 
 /*
-/home/jack/Downloads/output/a01-000u/sauvola.jpg
 /home/jack/Downloads/output/a01-000u/
  *
  */
