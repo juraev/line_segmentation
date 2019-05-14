@@ -51,6 +51,11 @@ void LineSegmentation :: process_chunks(){
 }
 
 void LineSegmentation :: draw_initial_lines(){
+	for (int i = 0; i < chunks[5].num_of_valleys; i ++)
+		cout << chunks[5].valleys[i] << "-";
+	cout << endl;
+	for (int i = 0; i < chunks[6].num_of_valleys; i ++)
+		cout << chunks[6].valleys[i] << " ";
 	//	clog << "drawing started" << endl;
 	for (int i = 1; i < num_of_chunks; i ++){
 
@@ -120,9 +125,11 @@ void Chunk :: build_hist(LineSegmentation * module){
 	//smoothing the histogram with "Cumulative moving average" method
 	sm_hist[0] = ((hist[0]+hist[1]+hist[3]+1)/3);
 	sm_hist[1] = ((hist[0]+hist[1]+hist[3] + hist[4] + 2) / 4);
+	sm_hist[_height - 1] = ((hist[_height - 1]+hist[_height - 2]+hist[_height - 3]+1)/3);
+	sm_hist[_height - 2] = ((hist[_height - 1]+hist[_height - 2]+hist[_height - 3] + hist[_height - 4] + 2) / 4);
 
 
-	for (int i = 2; i <_height; i ++){
+	for (int i = 2; i <_height - 2; i ++){
 		sm_hist[i] = ((hist[i-2]+hist[i-1]+hist[i]+hist[i+1]+hist[i+2])/5);
 		//		if(ind == 10) ff << sm_hist[i] << endl;
 	}
@@ -157,8 +164,8 @@ void Chunk :: prepare_peaks(){
 		}
 
 		if(i < _height){
+//			if((start + i)/2==-1) cout << "xaxa" << endl;
 			valleys.push_back((start + i) / 2);
-			num_of_valleys ++;
 		}
 
 		int in = -1, mxval = -1;//max value on nonzero region
@@ -166,18 +173,20 @@ void Chunk :: prepare_peaks(){
 
 		while(sm_hist[i] != 0 && i < _height){
 
-			if(sm_hist[i] >= mxval && i - in <= avg_height / 2){
+			if(sm_hist[i] >= mxval && i - in <= avg_height / 3){
+
 				in = i, mxval = sm_hist[i];
-				if(!peaks.empty())peaks.back()={in, mxval};
+				if(!peaks.empty()) peaks.back()={in, mxval};
 				else peaks.push_back({in, mxval}), num_of_peaks++;
 				mnval = 1e9; ii = -1;
 
 			} else if(sm_hist[i] >= mxval){
 
 				if(ii >= 0){				//minimal value between two peaks is found
+					if(ii==-1 || ii == 3169) cout << "xaxa" << endl;
 					valleys.push_back(ii);
-					num_of_valleys ++;
 				}
+
 				mnval = 1e9; ii = -1;	//reset values
 
 				in = i, mxval = sm_hist[i];
@@ -190,7 +199,9 @@ void Chunk :: prepare_peaks(){
 			i ++;
 		}
 	}
+	num_of_valleys = valleys.size();
 }
+//21 70 104 141 186 230 277 300 327 355 394 434 473 508 547 582 613 648 675 688 718
 
 Chunk::Chunk(int a, int b, int in, int st){
 	_height = a;
