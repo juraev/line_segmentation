@@ -2,7 +2,7 @@
  * linesegmentation.hh
  *
  *  Created on: Feb 13, 2019
- *      Author: jack
+ *      Author: juraev
  */
 
 #ifndef LINESEGMENTATION_H_

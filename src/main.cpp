@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: Feb 11, 2019
- *      Author: jack
+ *      Author: juraev
  */
 #include "linesegmentation.h"
 //#include "Image.h"
