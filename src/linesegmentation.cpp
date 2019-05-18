@@ -52,7 +52,7 @@ void LineSegmentation :: process_chunks(){
 
 void LineSegmentation :: draw_initial_lines(){
 	for (int i = 0; i < chunks[5].num_of_valleys; i ++)
-		cout << chunks[5].valleys[i] << "-";
+		cout << chunks[5].valleys[i] << " ";
 	cout << endl;
 	for (int i = 0; i < chunks[6].num_of_valleys; i ++)
 		cout << chunks[6].valleys[i] << " ";
@@ -65,33 +65,40 @@ void LineSegmentation :: draw_initial_lines(){
 		vector<int> cnct;
 		for(int j = 0; j < n_1; j ++) cnct.push_back(-1);
 
-		int j = 0, mn = 1e9;
+		int j = 0, j_1 = 0;
 
 		//bind valleys on phi(i) with valleys on phi(i-1)
-		for (int x = 0; x < n && j < n_1; x ++){
-			while(j < n_1 && mn > dist(i, x, i-1, j)) {
-				mn = dist(i, x, i-1, j), j ++;
+
+		for (; j < n && j_1 < n_1;){
+			if(dist(i-1, j_1, i, j) > dist(i-1, j_1, i, j + 1)){
+				j ++;
+			} else if(dist(i-1, j_1, i, j) > dist(i-1, j_1 + 1, i, j)){
+				j_1 ++;
+			} else {
+				cnct[j_1] = j;
+				j_1 ++;
+				j ++;
 			}
-			if(j >= n_1) break;
-			if(cnct[j] != -1 && dist(i, cnct[j], i-1, j) > dist(i, x, i-1, j)){
-				cnct[j] = x;
-			} else if(cnct[j] == -1) {
-				cnct[j] = x;
-			} else if(dist(i, x, i - 1, j) == dist(i, x, i - 1, j + 1)){
-				cnct[j+1]=x;
+		}
+
+		if(i - 1 == 5){
+			cout << endl;
+			for(int g = 0; g < cnct.size(); g ++){
+				cout << chunks[i-1].valleys[g] << " " << chunks[i].valleys[cnct[g]] << endl;
 			}
 		}
 
 		const uchar col[] = {0, 0, 0};
 		for (int z = 0; z < n_1; z ++){
+
 			input_img.draw_line(chunks[i-1].start_of_the_chunk, chunks[i-1].valleys[z],
 					chunks[i].start_of_the_chunk, chunks[i-1].valleys[z], col, 1);
+
 			if(cnct[z] != -1){
+
 				input_img.draw_line(chunks[i].start_of_the_chunk, chunks[i-1].valleys[z],
 						chunks[i].start_of_the_chunk, chunks[i].valleys[cnct[z]], col, 1);
-			} else {
-				input_img.draw_line(chunks[i-1].start_of_the_chunk, chunks[i-1].valleys[z],
-						chunks[i].start_of_the_chunk, chunks[i-1].valleys[z], col, 1);
+
 			}
 		}
 	}
@@ -173,7 +180,7 @@ void Chunk :: prepare_peaks(){
 
 		while(sm_hist[i] != 0 && i < _height){
 
-			if(sm_hist[i] >= mxval && i - in <= avg_height / 3){
+			if(sm_hist[i] >= mxval && i - in <= avg_height / 1.5){
 
 				in = i, mxval = sm_hist[i];
 				if(!peaks.empty()) peaks.back()={in, mxval};
@@ -183,7 +190,6 @@ void Chunk :: prepare_peaks(){
 			} else if(sm_hist[i] >= mxval){
 
 				if(ii >= 0){				//minimal value between two peaks is found
-					if(ii==-1 || ii == 3169) cout << "xaxa" << endl;
 					valleys.push_back(ii);
 				}
 
